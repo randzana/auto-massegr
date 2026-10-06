@@ -75,6 +75,20 @@ same Wi-Fi, set `WEB_PASSWORD` in `.env` and run
 Anyone with that password can send messages on your account, so choose a
 strong one.
 
+## Put it online (Vercel)
+
+The repo deploys to Vercel as a Flask app (`app.py` is the entry point).
+In the Vercel project go to **Settings → Environment Variables** and add:
+
+- `WEB_PASSWORD`: the password for the page. Without it, the page refuses
+  every visitor.
+- Your provider's keys (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
+  `TWILIO_FROM`, ... as in `.env.example`)
+- Optional: `DEFAULT_COUNTRY_CODE` (e.g. `964`) and `SEND_DELAY`
+
+Then redeploy. When you open the site, the browser asks for a user name
+and password: type anything as the user name and your `WEB_PASSWORD`.
+
 ## Command line
 
 Test first with the default `dry-run` provider (nothing is sent):
