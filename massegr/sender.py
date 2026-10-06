@@ -39,26 +39,33 @@ def send_one(provider, to, body, retries, sleep=time.sleep):
             sleep(2 ** attempt * 2)
 
 
+def send_to_contact(provider, contact, template, retries=3, optouts=(), sleep=time.sleep):
+    """Send the message to one contact and return a Result (never raises SendError)."""
+    if contact.phone in optouts:
+        return Result(contact.phone, contact.name, "skipped", error="opted out")
+    try:
+        message_id = send_one(provider, contact.phone, render(template, contact),
+                              retries, sleep)
+    except SendError as e:
+        return Result(contact.phone, contact.name, "failed", error=str(e))
+    return Result(contact.phone, contact.name, "sent", message_id)
+
+
 def send_all(contacts, template, provider, delay=1.0, retries=3, optouts=(),
              report_path=None, sleep=time.sleep, log=print):
     results = []
     total = len(contacts)
     try:
         for i, contact in enumerate(contacts, start=1):
-            prefix = f"[{i}/{total}] {contact.phone}"
-            if contact.phone in optouts:
-                results.append(Result(contact.phone, contact.name, "skipped", error="opted out"))
-                log(f"{prefix} skipped (opted out)")
+            result = send_to_contact(provider, contact, template, retries, optouts, sleep)
+            results.append(result)
+            if result.status == "sent":
+                log(f"[{i}/{total}] {contact.phone} sent")
+            elif result.status == "skipped":
+                log(f"[{i}/{total}] {contact.phone} skipped ({result.error})")
                 continue
-            try:
-                message_id = send_one(provider, contact.phone, render(template, contact),
-                                      retries, sleep)
-            except SendError as e:
-                results.append(Result(contact.phone, contact.name, "failed", error=str(e)))
-                log(f"{prefix} FAILED: {e}")
             else:
-                results.append(Result(contact.phone, contact.name, "sent", message_id))
-                log(f"{prefix} sent")
+                log(f"[{i}/{total}] {contact.phone} FAILED: {result.error}")
             if delay and i < total:
                 sleep(delay)
     except KeyboardInterrupt:

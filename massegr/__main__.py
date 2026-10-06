@@ -4,22 +4,10 @@ import argparse
 import os
 import sys
 
+from .config import load_env
 from .contacts import load_contacts, load_optouts
 from .providers import PROVIDERS, get_provider
 from .sender import render, send_all
-
-
-def load_env(path=".env"):
-    """Minimal .env reader: KEY=value lines; real environment variables win."""
-    if not os.path.exists(path):
-        return
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
 
 
 def parse_args(argv=None):

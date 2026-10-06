@@ -11,12 +11,26 @@ Meta's WhatsApp Cloud API).
 - Waits between messages and retries on rate limits / network errors
 - Shows a preview and asks before sending; saves results to `report.csv`
 - `dry-run` mode prints the messages without sending, to test your list
+- A **web page**: paste all your numbers, write the message, press Send
 
 ## Bo Kurdi (ba kurti)
 
 1. Python 3.9 yan nwetr dabmazrena, pashan: `pip install -r requirements.txt`
 2. `.env.example` kopi bka bo `.env`, w zanyariakani Twilio yan WhatsApp-i
    tya bnusa.
+
+**Ba web (asantrin rega):**
+
+```
+python -m massegr.web
+```
+
+Browser khoy dakretawa (`http://127.0.0.1:8000`). Hamuw raqamakan la
+sandwqi yakam paste bka (har raqamek la heleki), namaka bnusa, "Check
+numbers" w pashan "Send" dabgra. Har raqamek dabinit nardra yan na.
+
+**Ba command line:**
+
 3. Listi raqamakan la `contacts.csv` dabne (wak `contacts.example.csv`).
 4. Sarata taqi bkarawa - hich nanert, tanha nishani dadat:
 
@@ -42,7 +56,26 @@ cp contacts.example.csv contacts.csv
 cp message.example.txt message.txt
 ```
 
-## Usage
+## Web page
+
+```bash
+python -m massegr.web
+```
+
+Your browser opens `http://127.0.0.1:8000`. Paste the numbers (one per line,
+optionally `number, name`), write the message, press **Check numbers** to see
+how many are valid plus a preview, then **Send**. Each number shows `sent` or
+`failed` as it goes, you can **Stop** at any time, and **Download report**
+saves the results as CSV. Pick `dry-run` under "Send with" to try it without
+sending anything.
+
+The page only answers on your own computer. To open it from your phone on the
+same Wi-Fi, set `WEB_PASSWORD` in `.env` and run
+`python -m massegr.web --host 0.0.0.0`, then visit `http://<computer-ip>:8000`.
+Anyone with that password can send messages on your account, so choose a
+strong one.
+
+## Command line
 
 Test first with the default `dry-run` provider (nothing is sent):
 

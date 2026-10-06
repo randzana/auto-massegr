@@ -131,3 +131,16 @@ def get_provider(name):
         return PROVIDERS[name]()
     except KeyError:
         raise SystemExit(f"Unknown provider {name!r}. Choose: {', '.join(PROVIDERS)}")
+
+
+REQUIRED_ENV = {
+    "dry-run": (),
+    "twilio-sms": ("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM"),
+    "twilio-whatsapp": ("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_WHATSAPP_FROM"),
+    "whatsapp-cloud": ("WHATSAPP_TOKEN", "WHATSAPP_PHONE_NUMBER_ID"),
+}
+
+
+def is_configured(name):
+    """True when every setting the provider needs is present."""
+    return all(os.environ.get(var) for var in REQUIRED_ENV[name])

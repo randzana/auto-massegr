@@ -38,15 +38,21 @@ def normalize_phone(raw, default_country_code=""):
     return number
 
 
-def load_contacts(path, default_country_code=""):
-    """Read contacts from a CSV with a `phone` column (other columns optional).
+PHONE_CHARS_RE = re.compile(r"^[+\d\s\-().]+$")
 
-    A plain text file with one number per line also works.
+
+def load_contacts(path, default_country_code=""):
+    """Read contacts from a CSV file; see parse_contacts."""
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        return parse_contacts(f.read(), default_country_code)
+
+
+def parse_contacts(text, default_country_code=""):
+    """Read contacts from CSV text with a `phone` column (other columns optional).
+
+    Plain text with one number per line (optionally `number, name`) also works.
     Returns (contacts, errors): duplicates are dropped, bad rows go to errors.
     """
-    with open(path, newline="", encoding="utf-8-sig") as f:
-        text = f.read()
-
     lines = [line for line in text.splitlines() if line.strip()]
     if not lines:
         return [], []
@@ -60,8 +66,11 @@ def load_contacts(path, default_country_code=""):
     else:
         rows = []
         for cols in csv.reader(lines):
-            cols = [c.strip() for c in cols] + [""]
-            rows.append({"phone": cols[0], "name": cols[1]})
+            cols = [c.strip() for c in cols if c.strip()]
+            if len(cols) > 1 and all(PHONE_CHARS_RE.match(c) for c in cols):
+                rows.extend({"phone": c, "name": ""} for c in cols)
+            elif cols:
+                rows.append({"phone": cols[0], "name": cols[1] if len(cols) > 1 else ""})
 
     contacts, errors, seen = [], [], set()
     for line_no, row in enumerate(rows, start=1):
