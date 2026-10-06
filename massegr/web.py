@@ -58,9 +58,11 @@ def create_app():
                                 {"WWW-Authenticate": 'Basic realm="auto-massegr"'})
         elif _hostname(request.host) not in LOCAL_HOSTS:
             # Without a password the page only answers on this computer.
-            return Response("Set WEB_PASSWORD to use this page from another device.", 403)
+            return Response("Set WEB_PASSWORD (in .env, or in your host's environment "
+                            "variables) to use this page from another device.", 403)
         origin = request.headers.get("Origin")
-        if request.method == "POST" and origin and urlsplit(origin).netloc != request.host:
+        hosts = {request.host, request.headers.get("X-Forwarded-Host")}
+        if request.method == "POST" and origin and urlsplit(origin).netloc not in hosts:
             return _error("Cross-site request refused", 403)
 
     @app.get("/")
